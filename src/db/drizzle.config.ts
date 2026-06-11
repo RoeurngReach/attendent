@@ -26,14 +26,9 @@ console.log(`Using user: ${user} to connect to database.`);
 export default defineConfig({
   schema: "./src/db/schema.ts",
   out: "./supabase", // Saving migrations in supabase folder as requested
-  dialect: "postgresql",
-  schemaFilter: ["public"],
+  driver: "pg",
   dbCredentials: {
-    host: sqlHost,
-    user: user,
-    password: password,
-    database: sqlDbName,
-    ssl: false,
+    connectionString: `postgresql://${user}:${password}@${sqlHost}/${sqlDbName}`,
   },
   verbose: true,
 });

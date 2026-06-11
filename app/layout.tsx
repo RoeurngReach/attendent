@@ -8,14 +8,14 @@ const kantumruy = Kantumruy_Pro({
 });
 
 export const metadata = {
-  title: 'SecureAttend - HR & Payroll',
+  title: 'SecureAttend',
   description: 'Multi-tenant employee attendance and HR/payroll system with Khmer UI.',
 };
 
 export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
-    <html lang="en" className={kantumruy.variable} style={{ height: '100%', margin: 0 }}>
-      <body className="font-sans antialiased text-white selection:bg-indigo-500/30" style={{ margin: 0, height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'linear-gradient(135deg, #0F0C29 0%, #302b63 50%, #24243e 100%)' }}>
+    <html lang="en" className={`${kantumruy.variable} h-full m-0`}>
+      <body className="font-sans antialiased text-slate-800 bg-slate-50 selection:bg-indigo-500/30 h-full m-0 flex flex-col overflow-x-hidden">
           {children}
       </body>
     </html>

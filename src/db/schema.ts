@@ -14,11 +14,22 @@ export const users = pgTable('users', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
+export const employees = pgTable('employees', {
+  id: serial('id').primaryKey(),
+  code: text('code').notNull().unique(), // unique employee code
+  name: text('name').notNull(),
+  department: text('department').notNull(),
+  telegramId: text('telegram_id'),
+  active: boolean('active').default(true),
+});
+
 export const attendanceLogs = pgTable('attendance_logs', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').references(() => users.id).notNull(),
-  tenantId: text('tenant_id').notNull(),
+  userId: integer('user_id').references(() => users.id),
+  employeeCode: text('employee_code').references(() => employees.code),
+  tenantId: text('tenant_id').notNull().default('default-tenant'),
   type: text('type').notNull(), // 'check_in', 'check_out'
+
   method: text('method').notNull(), // 'gps', 'face', 'qr', 'nfc'
   timestamp: timestamp('timestamp').notNull().defaultNow(),
   locationLat: text('location_lat'),
