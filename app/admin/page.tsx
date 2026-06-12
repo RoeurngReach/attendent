@@ -84,6 +84,8 @@ export default function AdminPage() {
     { id: 'employees', khmer: 'បុគ្គលិក', english: '(Employees)', icon: Users },
     { id: 'attendance', khmer: 'វត្តមាន', english: '(Attendance)', icon: Clock },
     { id: 'payroll', khmer: 'ប្រាក់បៀវត្សរ៍', english: '(Payroll)', icon: DollarSign },
+    { id: 'qr', khmer: 'កូដ QR', english: '(QR Code)', icon: QrCode },
+    { id: 'telegram', khmer: 'តេឡេក្រាម', english: '(Telegram)', icon: MessageCircle },
     { id: 'system', khmer: 'ការកំណត់', english: '(Settings)', icon: Settings }
   ];
 
@@ -612,28 +614,127 @@ function QRTab() {
 }
 
 function TelegramTab() {
+  const [webhookStatus, setWebhookStatus] = useState<string>('');
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [currentWebhook, setCurrentWebhook] = useState<string | null>(null);
+
+  const checkWebhook = async () => {
+    try {
+      const res = await fetch('/api/telegram');
+      const data = await res.json();
+      if (data.webhookInfo?.url) {
+        setCurrentWebhook(data.webhookInfo.url);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    checkWebhook();
+  }, []);
+
+  const registerWebhook = async () => {
+    setIsRegistering(true);
+    setWebhookStatus('Registering...');
+    try {
+      const res = await fetch('/api/telegram');
+      const data = await res.json();
+      if (data.ok) {
+        setWebhookStatus('✅ Webhook successfully connected!');
+        if (data.webhookInfo?.url) {
+           setCurrentWebhook(data.webhookInfo.url);
+        }
+      } else {
+        setWebhookStatus('❌ Error: ' + (data.error || 'Failed to setup'));
+      }
+    } catch (err: any) {
+      setWebhookStatus('❌ Error: ' + err.message);
+    }
+    setIsRegistering(false);
+  };
+
   return (
     <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
       <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
          <MessageCircle className="w-5 h-5 text-indigo-500" /> Telegram Integration
       </h2>
-      <p className="text-slate-500 mb-6">Configure the automated Bot notifications.</p>
+      <p className="text-slate-500 mb-6">Configure the automated Bot notifications and commands.</p>
       
       <div className="space-y-4 max-w-xl">
          <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-            <h3 className="font-semibold text-sm mb-1 text-slate-700">Bot Token</h3>
+            <h3 className="font-semibold text-sm mb-1 text-slate-700">Bot Token (ត្រូវការ TELEGRAM_BOT_TOKEN)</h3>
+            <p className="text-xs text-slate-500 mb-2">ត្រូវប្រាកដថាអ្នកបានបញ្ជូល Key ឈ្មោះវានៅខាង Settings ជា <code className="bg-slate-200 px-1 rounded">TELEGRAM_BOT_TOKEN</code> និង <code className="bg-slate-200 px-1 rounded">NEXT_PUBLIC_TELEGRAM_BOT_TOKEN</code></p>
             <p className="font-mono text-xs text-slate-500 break-all bg-slate-200/50 p-2 rounded">
-               {process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN || 'Not configured in environment'}
+               {process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN ? '••••••••••••••••••••••••••••' : 'Not configured in environment'}
             </p>
          </div>
          <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-            <h3 className="font-semibold text-sm mb-1 text-slate-700">Admin Group ID</h3>
+            <h3 className="font-semibold text-sm mb-1 text-slate-700">Admin Group ID (សម្រាប់ផ្ញើរបាយការណ៍)</h3>
+            <p className="text-xs text-slate-500 mb-2">Key ត្រូវតែជា <code className="bg-slate-200 px-1 rounded">NEXT_PUBLIC_TELEGRAM_ADMIN_GROUP_ID</code> (សូមប្រយ័ត្ន<strong>កុំអោយមានដកឃ្លា Space</strong> នៅខាងចុង)</p>
             <p className="font-mono text-xs text-slate-500 bg-slate-200/50 p-2 rounded">
                {process.env.NEXT_PUBLIC_TELEGRAM_ADMIN_GROUP_ID || 'Not configured in environment'}
             </p>
          </div>
-         <div className="mt-4 p-4 bg-indigo-50 border border-indigo-100 rounded-xl text-sm text-indigo-800">
-            The webhook is statically pointed to <strong>/api/bot</strong>.
+         
+         <div className="mt-6 p-5 bg-indigo-50 border border-indigo-100 rounded-xl">
+            <h3 className="font-semibold text-indigo-900 mb-2">Bot Webhook Setup (ដើម្បីអោយ Bot មានជីវិត)</h3>
+            <p className="text-sm text-indigo-800 mb-4">
+              Click the button below to register this server's URL with Telegram. This will "wake up" your bot to receive messages like /start.
+            </p>
+            <div className="flex gap-2 items-center mb-4">
+              <button 
+                onClick={registerWebhook}
+                disabled={isRegistering}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium text-sm hover:bg-indigo-700 transition disabled:opacity-50"
+              >
+                {isRegistering ? 'Connecting...' : 'Connect Telegram Bot'}
+              </button>
+              <button 
+                onClick={async () => {
+                   setIsRegistering(true);
+                   await fetch('/api/telegram', { method: 'DELETE' });
+                   await checkWebhook();
+                   setIsRegistering(false);
+                }}
+                disabled={isRegistering}
+                className="px-4 py-2 bg-rose-100 text-rose-700 rounded-lg font-medium text-sm hover:bg-rose-200 transition disabled:opacity-50"
+              >
+                Disconnect / Reset Webhook
+              </button>
+            </div>
+            
+            {currentWebhook !== null && (
+              <div className="mb-4 text-sm font-medium">
+                 {currentWebhook === '' ? (
+                    <span className="text-rose-500">❌ Oop! No webhook is set right now. Bot is sleeping.</span>
+                 ) : (
+                    <span className={currentWebhook.endsWith('/api/telegram') ? "text-emerald-600" : "text-rose-500"}>
+                       {currentWebhook.endsWith('/api/telegram') ? '✅ Bot Webhook in Telegram server is correctly set to:' : '❌ បញ្ហា! Webhook ខុស! រួចសូមចុចប៊ូតុង Reset រួច Connect ម្តងទៀត។ Bot កំពុងត្រូវបញ្ជូនទិន្នន័យទៅកាន់៖'}
+                       <br/>
+                       <span className="text-slate-700 block mt-1 bg-slate-200 p-2 rounded break-all">{currentWebhook}</span>
+                    </span>
+                 )}
+              </div>
+            )}
+
+            {webhookStatus && <p className="mb-3 text-sm font-medium text-slate-700">{webhookStatus}</p>}
+
+            <div className="mt-4 pt-4 border-t border-indigo-200">
+               <h4 className="font-medium text-sm text-indigo-900 mb-1">Manual Method (វិធីសាស្រ្តកំណត់ដោតផ្ទាល់ខ្លួនក្នុងករណីចុចប៊ូតុងខាងលើលែងដើរ)</h4>
+               <p className="text-xs text-indigo-700 mb-2">
+                 បំពេញ <code className="font-bold">TELEGRAM_BOT_TOKEN</code> របស់លោកអ្នក រួច copy link នេះយកទៅបើកក្នុង Browser ថ្មីមួយទៀត៖
+               </p>
+               <input 
+                 readOnly 
+                 value={`https://api.telegram.org/bot${process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN || '<YOUR_BOT_TOKEN>'}/setWebhook?url=${typeof window !== 'undefined' ? window.location.origin : 'https://your-app-url.com'}/api/telegram`}
+                 className="w-full text-xs font-mono p-2 bg-white border border-indigo-200 rounded text-slate-600 focus:outline-none focus:ring focus:ring-indigo-300"
+                 onClick={(e) => e.currentTarget.select()}
+               />
+               <p className="text-xs text-indigo-600 mt-2">
+                 * វាត្រូវចេញអក្សរ <strong>"Webhook was set"</strong> ទើបបានជោគជ័យ។ ប្រសិនបើលោកអ្នក copy link នេះទៅ <strong>ត្រូវប្រាកដថា មានពាក្យ <code className="bg-indigo-100 px-1 rounded">/api/telegram</code> នៅខាងចុង url ជានិច្ច!</strong>
+               </p>
+            </div>
          </div>
       </div>
     </div>

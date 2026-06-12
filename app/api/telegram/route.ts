@@ -6,12 +6,12 @@ import { eq } from 'drizzle-orm';
 
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN || 'MOCK_TOKEN');
 
-bot.start((ctx) => {
+bot.start(async (ctx) => {
   let domain = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'https://ai.studio/build';
   if (domain.endsWith('/')) {
     domain = domain.slice(0, -1);
   }
-  ctx.reply('welcome to SecureAttend! Open the Mini App to check in.', {
+  await ctx.reply('welcome to SecureAttend! Open the Mini App to check in.', {
     reply_markup: {
       inline_keyboard: [
         [{ text: 'Open Mini App', web_app: { url: domain } }]
@@ -19,15 +19,16 @@ bot.start((ctx) => {
     }
   });
 });
-bot.help((ctx) => ctx.reply('Send /checkin to check in via location.'));
+bot.help(async (ctx) => await ctx.reply('Send /checkin to check in via location.'));
 
 bot.command('status', async (ctx) => {
   const telegramId = String(ctx.from.id);
   const userList = await db.select().from(users).where(eq(users.telegramId, telegramId));
   if (!userList.length) {
-    return ctx.reply("You are not linked. Please link your Telegram ID in the SecureAttend portal.");
+    await ctx.reply("You are not linked. Please link your Telegram ID in the SecureAttend portal.");
+    return;
   }
-  ctx.reply(`Account linked. Role: ${userList[0].role}.`);
+  await ctx.reply(`Account linked. Role: ${userList[0].role}.`);
 });
 
 export async function GET(req: NextRequest) {
@@ -58,6 +59,19 @@ export async function GET(req: NextRequest) {
   } catch (error: any) {
     console.error("Webhook setup error:", error);
     return NextResponse.json({ ok: false, error: 'Failed to configure webhook: ' + error.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    if (!token || token === 'MOCK_TOKEN') {
+      return NextResponse.json({ ok: false, error: 'Invalid token' }, { status: 400 });
+    }
+    await bot.telegram.deleteWebhook();
+    return NextResponse.json({ ok: true, message: 'Webhook deleted successfully.' });
+  } catch (error: any) {
+    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }
 }
 
