@@ -11,10 +11,10 @@ bot.start(async (ctx) => {
   if (domain.endsWith('/')) {
     domain = domain.slice(0, -1);
   }
-  await ctx.reply('welcome to SecureAttend! Open the Mini App to check in.', {
+  await ctx.reply('សូមស្វាគមន៍កម្មវិធីនេះ', {
     reply_markup: {
       inline_keyboard: [
-        [{ text: 'Open Mini App', web_app: { url: domain } }]
+        [{ text: 'ចុចទីនេះដើម្បីចុះវត្តមាន', web_app: { url: domain } }]
       ]
     }
   });
