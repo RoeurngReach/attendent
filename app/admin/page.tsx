@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Settings, Users, QrCode, MessageCircle, Lock, LayoutDashboard, Plus, Trash2, Edit2, CheckCircle2, Save, MapPin, CalendarDays, DollarSign, Download, Send, Clock, Upload, IdCard, Printer } from 'lucide-react';
+import { Settings, Users, QrCode, MessageCircle, Lock, LayoutDashboard, Plus, Trash2, Edit2, CheckCircle2, Save, MapPin, CalendarDays, DollarSign, Download, Send, Clock, Upload, IdCard, Printer, Fingerprint, ScanLine } from 'lucide-react';
 import QRCode from 'react-qr-code';
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'employees'|'qr'|'telegram'|'system'|'attendance'|'payroll'|'timesheet'|'cards'>('employees');
+  const [activeTab, setActiveTab] = useState<'dashboard'|'leave'|'employees'|'qr'|'telegram'|'system'|'attendance'|'payroll'|'timesheet'|'cards'>('dashboard');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -54,21 +54,21 @@ export default function AdminPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans">
-        <form onSubmit={handleLogin} className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100 max-w-sm w-full flex flex-col gap-6">
-          <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600 mb-2">
+      <div className="min-h-screen bg-[#11122a] flex items-center justify-center p-4 font-sans text-slate-100">
+        <form onSubmit={handleLogin} className="bg-[#1a1b3b] p-8 rounded-3xl shadow-2xl border border-indigo-500/20 max-w-sm w-full flex flex-col gap-6">
+          <div className="w-12 h-12 bg-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400 mb-2">
             <Lock className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">Admin Login</h1>
-            <p className="text-slate-500 text-sm">Sign in to access dashboard</p>
+            <h1 className="text-2xl font-bold text-white">Admin Login</h1>
+            <p className="text-indigo-200/70 text-sm">Sign in to access SecureAttend</p>
           </div>
           <input 
             type="password" 
             placeholder="Password" 
             value={password}
             onChange={e => setPassword(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+            className="w-full bg-[#11122a] border border-indigo-500/30 text-white rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
           />
           <button type="submit" className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all shadow-md">
             Login
@@ -78,50 +78,67 @@ export default function AdminPage() {
     );
   }
 
+  const sidebarItems = [
+    { id: 'dashboard', khmer: 'ផ្ទាំងគ្រប់គ្រង', english: '(Dashboard)', icon: LayoutDashboard },
+    { id: 'leave', khmer: 'ច្បាប់ឈប់សម្រាក', english: '(Leave)', icon: CalendarDays },
+    { id: 'employees', khmer: 'បុគ្គលិក', english: '(Employees)', icon: Users },
+    { id: 'attendance', khmer: 'វត្តមាន', english: '(Attendance)', icon: Clock },
+    { id: 'payroll', khmer: 'ប្រាក់បៀវត្សរ៍', english: '(Payroll)', icon: DollarSign },
+    { id: 'system', khmer: 'ការកំណត់', english: '(Settings)', icon: Settings }
+  ];
+
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans">
+    <div className="min-h-screen bg-[#11122a] text-slate-200 flex flex-col md:flex-row font-sans">
       {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-white border-r border-slate-200 flex flex-col">
-        <div className="p-6 border-b border-slate-100">
-          <div className="flex items-center gap-2 mb-1">
-             <LayoutDashboard className="w-6 h-6 text-indigo-600" />
-             <h1 className="font-bold text-xl text-slate-800 tracking-tight">Admin<span className="text-indigo-600">Hub</span></h1>
+      <aside className="w-full md:w-[280px] bg-[#151630] border-r border-[#26274d] flex flex-col shrink-0 rounded-tr-3xl rounded-br-3xl">
+        <div className="p-6">
+          <div className="flex items-center gap-3 mb-1">
+             <div className="bg-indigo-600 p-2 rounded-xl text-white shadow-lg">
+               <Fingerprint className="w-6 h-6" />
+             </div>
+             <h1 className="font-bold text-2xl text-white tracking-tight">SecureAttend</h1>
           </div>
-          <p className="text-xs text-slate-500 font-medium">SecureAttend Management</p>
         </div>
-        <nav className="flex-1 p-4 flex flex-col gap-2">
-          {['employees', 'attendance', 'timesheet', 'payroll', 'cards', 'qr', 'telegram', 'system'].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab as any)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm capitalize ${
-                activeTab === tab 
-                ? 'bg-indigo-50 text-indigo-700 shadow-sm' 
-                : 'text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              {tab === 'employees' && <Users className="w-5 h-5" />}
-              {tab === 'attendance' && <CalendarDays className="w-5 h-5" />}
-              {tab === 'timesheet' && <Clock className="w-5 h-5" />}
-              {tab === 'payroll' && <DollarSign className="w-5 h-5" />}
-              {tab === 'cards' && <IdCard className="w-5 h-5" />}
-              {tab === 'qr' && <QrCode className="w-5 h-5" />}
-              {tab === 'telegram' && <MessageCircle className="w-5 h-5" />}
-              {tab === 'system' && <Settings className="w-5 h-5" />}
-              {tab}
-            </button>
-          ))}
+        
+        <nav className="flex-1 px-4 py-2 flex flex-col gap-1 overflow-y-auto">
+          {sidebarItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id as any)}
+                className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all text-left ${
+                  isActive 
+                  ? 'bg-[#2a2b5e] text-indigo-300 shadow-sm border-l-4 border-indigo-500 rounded-l-none -ml-4 pl-8' 
+                  : 'text-slate-400 hover:bg-[#1a1b3b] hover:text-slate-200'
+                }`}
+              >
+                <Icon className="w-5 h-5 shrink-0" />
+                <div className="flex flex-col">
+                  <span className="font-bold text-sm text-white">{item.khmer}</span>
+                  <span className="text-[10px] opacity-70">{item.english}</span>
+                </div>
+              </button>
+            )
+          })}
         </nav>
-        <div className="p-4 border-t border-slate-100">
-          <button onClick={handleLogout} className="w-full py-2 flex justify-center items-center gap-2 text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-semibold transition-colors">
-            Logout
+        
+        <div className="p-4 mt-auto">
+          <div className="bg-[#1a1b3b] rounded-2xl p-4 border border-[#2a2b5e]">
+            <p className="text-[10px] text-indigo-300/70 mb-1">សាលារៀនដែលបានជ្រើសរើស (Current Tenant)</p>
+            <p className="text-sm font-bold text-white leading-tight">Northbridge International<br/>School</p>
+          </div>
+          <button onClick={handleLogout} className="mt-4 w-full py-2 flex items-center justify-center gap-2 text-rose-400 hover:bg-rose-500/10 rounded-xl text-sm font-bold transition-colors">
+            <Lock className="w-4 h-4" /> Sign Out
           </button>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto">
-         <div className="max-w-5xl mx-auto">
+      <main className="flex-1 p-4 md:px-8 md:py-6 overflow-y-auto">
+         <div className="max-w-6xl mx-auto">
+            {activeTab === 'dashboard' && <DashboardTab />}
             {activeTab === 'employees' && <EmployeesTab />}
             {activeTab === 'attendance' && <AttendanceTab />}
             {activeTab === 'timesheet' && <TimesheetTab />}
@@ -135,6 +152,156 @@ export default function AdminPage() {
     </div>
   );
 }
+
+function DashboardTab() {
+  const [logs, setLogs] = useState<any[]>([
+    { id: 1, name: "ចាន់ តុលា", engName: "Chan Tola", eid: "SC-042", time: "07:52 AM", method: "AI FACE MATCH", location: "Inside Geofence", status: "VERIFIED" },
+    { id: 2, name: "លឹម សុគន្ធ", engName: "Lim Sokun", eid: "SC-089", time: "08:15 AM", method: "NFC SCAN", location: "Inside Geofence", status: "LATE" },
+    { id: 3, name: "គង់ ស្រីនី", engName: "Kong Sreyny", eid: "SC-102", time: "07:45 AM", method: "QR CODE", location: "Inside Geofence", status: "VERIFIED" },
+  ]);
+
+  return (
+    <div className="flex flex-col gap-8 pb-10">
+       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-[#2a2b5e] pb-6">
+         <div>
+            <h1 className="text-3xl font-bold text-white mb-1">របាយការណ៍សង្ខេប</h1>
+            <p className="text-slate-400 text-sm">ថ្ងៃព្រហស្បតិ៍, ១៨ មេសា ២០២៤ (Thursday, April 18, 2024)</p>
+         </div>
+         <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2 bg-emerald-500/10 px-4 py-1.5 rounded-full border border-emerald-500/20">
+               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+               <span className="text-emerald-400 text-xs font-bold tracking-widest">LIVE SYNC</span>
+            </div>
+            <div className="flex items-center gap-3">
+               <div className="text-right">
+                 <div className="font-bold text-white text-sm">សុខ វិសាល (Visal Sok)</div>
+                 <div className="text-[10px] text-indigo-400 tracking-wider">ADMINISTRATOR</div>
+               </div>
+               <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
+                 <Users className="w-5 h-5 text-indigo-300" />
+               </div>
+            </div>
+         </div>
+       </header>
+
+       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1 flex flex-col gap-4">
+             <h2 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+               <Clock className="w-5 h-5 text-indigo-400" /> ជម្រើសបញ្ចូលវត្តមាន
+             </h2>
+             
+             <div className="bg-[#1a1b3b] border border-[#2a2b5e] p-4 rounded-2xl flex items-center gap-4 hover:border-indigo-500/50 cursor-pointer transition-colors">
+               <div className="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+                 <MapPin className="w-6 h-6" />
+               </div>
+               <div>
+                 <div className="font-bold text-white">GPS Check-In</div>
+                 <div className="text-xs text-slate-400">Check in with location</div>
+               </div>
+             </div>
+
+             <div className="bg-[#1a1b3b] border border-[#2a2b5e] p-4 rounded-2xl flex items-center gap-4 hover:border-indigo-500/50 cursor-pointer transition-colors">
+               <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400 shrink-0">
+                 <ScanLine className="w-6 h-6" />
+               </div>
+               <div>
+                 <div className="font-bold text-white">Face Match AI</div>
+                 <div className="text-xs text-slate-400">Selfie verification</div>
+               </div>
+             </div>
+
+             <div className="bg-[#1a1b3b] border border-[#2a2b5e] p-4 rounded-2xl flex items-center gap-4 hover:border-indigo-500/50 cursor-pointer transition-colors">
+               <div className="w-12 h-12 rounded-xl bg-teal-500/20 flex items-center justify-center text-teal-400 shrink-0">
+                 <Fingerprint className="w-6 h-6" />
+               </div>
+               <div>
+                 <div className="font-bold text-white">NFC Tap</div>
+                 <div className="text-xs text-slate-400">Tap your employee card</div>
+               </div>
+             </div>
+          </div>
+
+          <div className="lg:col-span-2 flex flex-col gap-6">
+             <div className="grid grid-cols-2 gap-4">
+                <div className="bg-[#1e1f42] rounded-3xl p-6 border border-[#2a2b5e] flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-[#2a2b5e] flex items-center justify-center text-indigo-300">
+                    <CalendarDays className="w-7 h-7" />
+                  </div>
+                  <div>
+                    <div className="text-xs text-slate-400 font-bold mb-1">សរុប (Total Staff)</div>
+                    <div className="text-3xl font-bold text-white">១៥៥ <span className="text-sm font-normal text-slate-400">នាក់</span></div>
+                  </div>
+                </div>
+                <div className="bg-[#1e1f42] rounded-3xl p-6 border border-[#2a2b5e] flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-teal-500/10 flex items-center justify-center text-teal-400">
+                    <CheckCircle2 className="w-7 h-7" />
+                  </div>
+                  <div>
+                    <div className="text-xs text-slate-400 font-bold mb-1">មកដល់ (Checked In)</div>
+                    <div className="text-3xl font-bold text-teal-400">១៤២ <span className="text-sm font-normal text-slate-400">នាក់</span></div>
+                  </div>
+                </div>
+             </div>
+
+             <div className="bg-[#1a1b3b] rounded-3xl border border-[#2a2b5e] overflow-hidden">
+                <div className="p-5 border-b border-[#2a2b5e] flex items-center justify-between bg-[#1e1f42]">
+                   <h3 className="font-bold text-white">កំណត់ត្រាវត្តមានថ្មីៗ (Recent Logs)</h3>
+                   <div className="flex gap-2">
+                     <button className="px-4 py-2 border border-[#2a2b5e] rounded-xl text-xs font-bold text-slate-300 hover:bg-[#2a2b5e] transition">Filter</button>
+                     <button className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-xl text-xs font-bold text-white shadow-sm transition">Download CSV</button>
+                   </div>
+                </div>
+                <div className="overflow-x-auto">
+                   <table className="w-full text-left text-sm whitespace-nowrap">
+                      <thead className="bg-[#151630]">
+                         <tr>
+                            <th className="px-5 py-4 text-xs font-bold tracking-wider text-slate-400">ឈ្មោះបុគ្គលិក (STAFF NAME)</th>
+                            <th className="px-5 py-4 text-xs font-bold tracking-wider text-slate-400">ពេលវេលា (TIME)</th>
+                            <th className="px-5 py-4 text-xs font-bold tracking-wider text-slate-400">វិធីសាស្ត្រ (METHOD)</th>
+                            <th className="px-5 py-4 text-xs font-bold tracking-wider text-slate-400">ទីតាំង (LOCATION)</th>
+                            <th className="px-5 py-4 text-xs font-bold tracking-wider text-slate-400">ស្ថានភាព (STATUS)</th>
+                         </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#2a2b5e]">
+                         {logs.map((log) => (
+                           <tr key={log.id} className="hover:bg-[#1e1f42] transition-colors">
+                              <td className="px-5 py-4">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-lg bg-[#2a2b5e] text-indigo-300 flex items-center justify-center font-bold text-xs uppercase">
+                                    {log.name.charAt(0)}
+                                  </div>
+                                  <div>
+                                    <div className="font-bold text-white">{log.name}</div>
+                                    <div className="text-xs text-slate-400">({log.engName}) <br/><span className="text-indigo-400">ID: {log.eid}</span></div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-5 py-4 font-mono font-medium text-white">{log.time}</td>
+                              <td className="px-5 py-4">
+                                <span className={`text-[10px] px-2 py-1 rounded font-bold tracking-wider ${log.method.includes('FACE') ? 'bg-indigo-500/20 text-indigo-300' : log.method.includes('QR') ? 'bg-purple-500/20 text-purple-300' : 'bg-slate-700 text-slate-300'}`}>
+                                  {log.method}
+                                </span>
+                              </td>
+                              <td className="px-5 py-4 text-xs text-slate-400 flex items-center gap-1.5 pt-6">
+                                <MapPin className="w-3.5 h-3.5" /> {log.location}
+                              </td>
+                              <td className="px-5 py-4">
+                                <span className={`text-xs font-bold ${log.status === 'VERIFIED' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                                  {log.status}
+                                </span>
+                              </td>
+                           </tr>
+                         ))}
+                      </tbody>
+                   </table>
+                </div>
+             </div>
+          </div>
+       </div>
+    </div>
+  )
+}
+
 
 function EmployeesTab() {
   const [employees, setEmployees] = useState<any[]>([]);
