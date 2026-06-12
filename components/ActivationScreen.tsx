@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from 'react';
-import { Fingerprint, ArrowRight, Loader2 } from 'lucide-react';
+import { Fingerprint, ArrowRight, Loader2, Shield } from 'lucide-react';
+import Link from 'next/link';
 
 interface ActivationScreenProps {
   onSuccess: (user: any) => void;
@@ -78,6 +79,12 @@ export default function ActivationScreen({ onSuccess }: ActivationScreenProps) {
         <div className="mt-8 text-xs text-slate-400 text-center bg-slate-50 p-3 rounded-lg border border-slate-100 w-full z-10">
           <p className="font-semibold mb-1">Demo Codes:</p>
           <p className="font-mono">SC-042, SC-089, SC-102, ADMIN</p>
+        </div>
+
+        <div className="mt-4 text-center z-10 text-sm">
+          <Link href="/admin" className="text-slate-400 hover:text-brand-600 font-medium flex items-center justify-center gap-1 transition-colors">
+            <Shield className="w-4 h-4" /> Go to Admin Dashboard
+          </Link>
         </div>
       </div>
     </div>

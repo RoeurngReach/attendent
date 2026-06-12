@@ -7,7 +7,10 @@ import { eq } from 'drizzle-orm';
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN || 'MOCK_TOKEN');
 
 bot.start((ctx) => {
-  const domain = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'https://ai.studio/build';
+  let domain = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'https://ai.studio/build';
+  if (domain.endsWith('/')) {
+    domain = domain.slice(0, -1);
+  }
   ctx.reply('welcome to SecureAttend! Open the Mini App to check in.', {
     reply_markup: {
       inline_keyboard: [
@@ -34,7 +37,11 @@ export async function GET(req: NextRequest) {
     const proto = req.headers.get('x-forwarded-proto') || 'https';
     const computedDomain = host ? `${proto}://${host}` : url.origin;
 
-    const domain = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || computedDomain;
+    let domain = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || computedDomain;
+    // Remove trailing slash if present
+    if (domain.endsWith('/')) {
+      domain = domain.slice(0, -1);
+    }
     const webhookUrl = `${domain}/api/telegram`;
     
     // Check if the token is available and not a mock token
@@ -45,11 +52,12 @@ export async function GET(req: NextRequest) {
 
     // Set the webhook for the Telegram Bot
     const result = await bot.telegram.setWebhook(webhookUrl);
+    const info = await bot.telegram.getWebhookInfo();
     
-    return NextResponse.json({ ok: true, message: 'Webhook set successfully to ' + webhookUrl, result });
+    return NextResponse.json({ ok: true, message: 'Webhook setup check complete.', webhookUrl, setWebhookResult: result, webhookInfo: info });
   } catch (error: any) {
     console.error("Webhook setup error:", error);
-    return NextResponse.json({ ok: false, error: 'Failed to set webhook: ' + error.message }, { status: 500 });
+    return NextResponse.json({ ok: false, error: 'Failed to configure webhook: ' + error.message }, { status: 500 });
   }
 }
 

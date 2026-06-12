@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Settings, Users, QrCode, MessageCircle, Lock, LayoutDashboard, Plus, Trash2, Edit2, CheckCircle2, Save, MapPin, CalendarDays, DollarSign, Download, Send, Clock, Upload, IdCard, Printer, Fingerprint, ScanLine } from 'lucide-react';
+import { Settings, Users, QrCode, MessageCircle, Lock, LayoutDashboard, Plus, Trash2, Edit2, CheckCircle2, Save, MapPin, CalendarDays, DollarSign, Download, Send, Clock, Upload, IdCard, Printer, Fingerprint, ScanLine, Shield } from 'lucide-react';
 import QRCode from 'react-qr-code';
 
 export default function AdminPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [password, setPassword] = useState('');
   const [activeTab, setActiveTab] = useState<'dashboard'|'leave'|'employees'|'qr'|'telegram'|'system'|'attendance'|'payroll'|'timesheet'|'cards'>('dashboard');
 
@@ -94,7 +94,7 @@ export default function AdminPage() {
         <div className="p-6">
           <div className="flex items-center gap-3 mb-1">
              <div className="bg-indigo-600 p-2 rounded-xl text-white shadow-lg">
-               <Fingerprint className="w-6 h-6" />
+               <Shield className="w-6 h-6" />
              </div>
              <h1 className="font-bold text-2xl text-white tracking-tight">SecureAttend</h1>
           </div>
@@ -154,6 +154,29 @@ export default function AdminPage() {
 }
 
 function DashboardTab() {
+  const [currentDateFormatted, setCurrentDateFormatted] = useState('កំពុងផ្ទុក... (Loading...)');
+
+  useEffect(() => {
+    const updateDate = () => {
+      const now = new Date();
+      const khmerDays = ["អាទិត្យ", "ចន្ទ", "អង្គារ", "ពុធ", "ព្រហស្បតិ៍", "សុក្រ", "សៅរ៍"];
+      const khmerMonths = ["មករា", "កុម្ភៈ", "មីនា", "មេសា", "ឧសភា", "មិថុនា", "កក្កដា", "សីហា", "កញ្ញា", "តុលា", "វិច្ឆិកា", "ធ្នូ"];
+      const toKhmerNum = (num: number | string) => num.toString().split('').map(d => '០១២៣៤៥៦៧៨៩'[parseInt(d)] || d).join('');
+      
+      const dayName = khmerDays[now.getDay()];
+      const day = toKhmerNum(now.getDate());
+      const monthName = khmerMonths[now.getMonth()];
+      const year = toKhmerNum(now.getFullYear());
+      
+      const khmerDateStr = `ថ្ងៃ${dayName}, ${day} ${monthName} ${year}`;
+      const engDateStr = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      setCurrentDateFormatted(`${khmerDateStr} (${engDateStr})`);
+    };
+    updateDate();
+    const interval = setInterval(updateDate, 60000); // Update every minute
+    return () => clearInterval(interval);
+  }, []);
+
   const [logs, setLogs] = useState<any[]>([
     { id: 1, name: "ចាន់ តុលា", engName: "Chan Tola", eid: "SC-042", time: "07:52 AM", method: "AI FACE MATCH", location: "Inside Geofence", status: "VERIFIED" },
     { id: 2, name: "លឹម សុគន្ធ", engName: "Lim Sokun", eid: "SC-089", time: "08:15 AM", method: "NFC SCAN", location: "Inside Geofence", status: "LATE" },
@@ -165,7 +188,7 @@ function DashboardTab() {
        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-[#2a2b5e] pb-6">
          <div>
             <h1 className="text-3xl font-bold text-white mb-1">របាយការណ៍សង្ខេប</h1>
-            <p className="text-slate-400 text-sm">ថ្ងៃព្រហស្បតិ៍, ១៨ មេសា ២០២៤ (Thursday, April 18, 2024)</p>
+            <p className="text-slate-400 text-sm">{currentDateFormatted}</p>
          </div>
          <div className="flex items-center gap-6">
             <div className="flex items-center gap-2 bg-emerald-500/10 px-4 py-1.5 rounded-full border border-emerald-500/20">
@@ -229,7 +252,7 @@ function DashboardTab() {
                   </div>
                   <div>
                     <div className="text-xs text-slate-400 font-bold mb-1">សរុប (Total Staff)</div>
-                    <div className="text-3xl font-bold text-white">១៥៥ <span className="text-sm font-normal text-slate-400">នាក់</span></div>
+                    <div className="text-3xl font-bold text-white">១៥៤ <span className="text-sm font-normal text-slate-400">នាក់</span></div>
                   </div>
                 </div>
                 <div className="bg-[#1e1f42] rounded-3xl p-6 border border-[#2a2b5e] flex items-center gap-4">
